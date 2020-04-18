@@ -11,6 +11,7 @@ import * as firebase from 'firebase/app';
 export class NavbarComponent implements OnInit {
   user: Observable<firebase.User>;
   userEmail: string;
+  password: string;
 
   constructor(private authService: AuthService) { }
 
@@ -21,6 +22,10 @@ export class NavbarComponent implements OnInit {
         this.userEmail = user.email;
       }
     });
+  }
+
+  login() {
+    this.authService.login(this.userEmail, this.password);
   }
 
   logout() {
