@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { AngularFireDatabase, AngularFireList } from 'angularfire2/database';
+import { AngularFireDatabase, AngularFireList, AngularFireObject } from 'angularfire2/database';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
@@ -13,9 +13,9 @@ import { ChatMessage } from '../models/chat-message.model';
 })
 export class ChatService {
   user: firebase.User;
-  chatMessages: AngularFireList<ChatMessage[]>;
+  chatMessages: AngularFireList<ChatMessage>;
   chatMessage: ChatMessage;
-  userName: Observable<string>;
+  userName: Observable<ChatMessage>;
 
   constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) {
     this.afAuth.authState.subscribe(auth => {
@@ -32,7 +32,7 @@ export class ChatService {
   getUser() {
     const userId = this.user.uid;
     const path = `/users/${userId}`;
-    return this.db.object(path);
+    return this.db.object(path).valueChanges;
   }
 
   getUsers() {
@@ -53,11 +53,10 @@ export class ChatService {
     console.log('Called sendMessage()!');
   }
 
-  getMessages(): AngularFireList<ChatMessage[]> {
+
+  getMessages(): AngularFireList<ChatMessage> {
     // query to create our message feed binding
-    return this.db.list('messages', ref => {
-      return ref.limitToLast(25).orderByKey()
-    });
+    return this.db.list('messages', ref => ref.orderByKey().limitToLast(25));
   }
 
   getTimeStamp() {
