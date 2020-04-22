@@ -11,12 +11,13 @@ import { AngularFireList } from 'angularfire2/database';
   styleUrls: ['./feed.component.css']
 })
 export class FeedComponent implements OnInit, OnChanges {
-  feed: AngularFireList<ChatMessage>;
+  feed: Observable<ChatMessage[]>;
 
   constructor(private chat: ChatService) { }
 
   ngOnInit(): void {
     this.feed = this.chat.getMessages();
+    console.log(this.feed);
   }
 
   ngOnChanges() {

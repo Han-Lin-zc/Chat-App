@@ -13,9 +13,9 @@ import { ChatMessage } from '../models/chat-message.model';
 })
 export class ChatService {
   user: firebase.User;
-  chatMessages: AngularFireList<ChatMessage>;
+  chatMessages: Observable<ChatMessage[]>;
   chatMessage: ChatMessage;
-  userName: Observable<ChatMessage>;
+  userName: string;
 
   constructor(private db: AngularFireDatabase, private afAuth: AngularFireAuth) {
     this.afAuth.authState.subscribe(auth => {
@@ -29,10 +29,10 @@ export class ChatService {
     });
   }
 
-  getUser() {
+  getUser(): Observable<any> {
     const userId = this.user.uid;
     const path = `/users/${userId}`;
-    return this.db.object(path).valueChanges;
+    return this.db.object(path).valueChanges();
   }
 
   getUsers() {
@@ -41,12 +41,11 @@ export class ChatService {
   }
 
   sendMessage(msg: string) {
-    const timeStamp = this.getTimeStamp();
     const email = this.user.email;
     this.chatMessages = this.getMessages();
-    this.chatMessages.push({
+    this.db.list<ChatMessage>('messages').push({
       message: msg,
-      timeSent: timeStamp,
+      timeSent: Date.now(),
       userName: this.userName,
       email: email
     });
@@ -54,16 +53,8 @@ export class ChatService {
   }
 
 
-  getMessages(): AngularFireList<ChatMessage> {
+  getMessages(): Observable<ChatMessage[]> {
     // query to create our message feed binding
-    return this.db.list('messages', ref => ref.orderByKey().limitToLast(25));
-  }
-
-  getTimeStamp() {
-    const now = new Date();
-    const date = now.getUTCFullYear() + '/' + (now.getUTCMonth() + 1) + '/' + now.getUTCDate();
-    const time = now.getUTCHours() + ':' + now.getUTCMinutes() + ':' + now.getUTCSeconds();
-    const test = (date + ' ' + time);
-    console.log(test);
+    return this.db.list<ChatMessage>('messages', ref => ref.orderByKey().limitToLast(25)).valueChanges();
   }
 }
