@@ -37,7 +37,7 @@ export class ChatService {
 
   getUsers() {
     const path = '/users';
-    return this.db.list(path);
+    return this.db.list(path).valueChanges();
   }
 
   sendMessage(msg: string) {
